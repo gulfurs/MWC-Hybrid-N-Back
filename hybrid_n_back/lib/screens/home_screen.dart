@@ -69,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       isTactileMode: _tactileModeEnabled,
                       startingNLevel: _startingNLevel,
                       stimulusDuration: _stimulusDuration,
+                      soundFeedbackEnabled: _soundFeedbackEnabled,
                     ),
                   ),
                 );

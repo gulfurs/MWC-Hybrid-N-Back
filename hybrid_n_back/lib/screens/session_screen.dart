@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hybrid_n_back/game/n_back_game.dart';
-import 'package:hybrid_n_back/models/game_session.dart';
 import 'package:hybrid_n_back/screens/summary_screen.dart';
+import 'package:hybrid_n_back/services/tts_service.dart';
 
 class SessionScreen extends StatefulWidget {
   final bool isTactileMode;
   final int startingNLevel;
   final double stimulusDuration;
+  final bool soundFeedbackEnabled;
 
   const SessionScreen({
     super.key,
     this.isTactileMode = false,
     this.startingNLevel = 1,
     this.stimulusDuration = 3.0,
+    this.soundFeedbackEnabled = true,
   });
 
   @override
@@ -22,6 +24,7 @@ class SessionScreen extends StatefulWidget {
 
 class _SessionScreenState extends State<SessionScreen> {
   final NBackGame _game = NBackGame();
+  final TTSService _ttsService = TTSService();
   int _score = 0;
   int _nLevel = 1;
   String _currentLetter = '';
@@ -31,16 +34,25 @@ class _SessionScreenState extends State<SessionScreen> {
   bool _showPositionFeedback = false;
   bool _showLetterFeedback = false;
   bool _showBothFeedback = false;
+  
+  // Response tracking - prevent multiple responses per stimulus
+  bool _hasRespondedToCurrentStimulus = false;
 
   @override
   void initState() {
     super.initState();
+    _initializeTTS();
     _setupGameListeners();
     _startGame();
   }
   
+  Future<void> _initializeTTS() async {
+    await _ttsService.initialize();
+  }
+  
   @override
   void dispose() {
+    _ttsService.stop();
     _game.dispose();
     super.dispose();
   }
@@ -51,7 +63,14 @@ class _SessionScreenState extends State<SessionScreen> {
       setState(() {
         _currentLetter = stimulus.letter;
         _currentPosition = stimulus.position;
+        // Reset response flag for new stimulus
+        _hasRespondedToCurrentStimulus = false;
       });
+      
+      // Speak the letter if sound feedback is enabled
+      if (widget.soundFeedbackEnabled) {
+        _ttsService.speakLetter(stimulus.letter);
+      }
     });
     
     // Listen for score updates
@@ -84,10 +103,14 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   void _onPositionResponse() {
+    // Prevent multiple responses to the same stimulus
+    if (_hasRespondedToCurrentStimulus) return;
+    
     _game.handlePositionResponse();
     
     setState(() {
       _showPositionFeedback = true;
+      _hasRespondedToCurrentStimulus = true;
     });
     
     // Reset the feedback after a short delay
@@ -101,10 +124,14 @@ class _SessionScreenState extends State<SessionScreen> {
   }
 
   void _onLetterResponse() {
+    // Prevent multiple responses to the same stimulus
+    if (_hasRespondedToCurrentStimulus) return;
+    
     _game.handleLetterResponse();
     
     setState(() {
       _showLetterFeedback = true;
+      _hasRespondedToCurrentStimulus = true;
     });
     
     // Reset the feedback after a short delay
@@ -118,10 +145,14 @@ class _SessionScreenState extends State<SessionScreen> {
   }
   
   void _onBothResponse() {
+    // Prevent multiple responses to the same stimulus
+    if (_hasRespondedToCurrentStimulus) return;
+    
     _game.handleBothResponse();
     
     setState(() {
       _showBothFeedback = true;
+      _hasRespondedToCurrentStimulus = true;
     });
     
     // Reset the feedback after a short delay

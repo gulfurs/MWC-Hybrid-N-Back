@@ -212,20 +212,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             
             // Stimulus Duration
-            ListTile(
-              title: const Text('Stimulus Duration'),
-              subtitle: Text('${_stimulusDuration.toStringAsFixed(1)} seconds'),
-              trailing: Slider(
-                value: _stimulusDuration,
-                min: 1.0,
-                max: 5.0,
-                divisions: 8,
-                label: '${_stimulusDuration.toStringAsFixed(1)}s',
-                onChanged: (value) {
-                  setState(() {
-                    _stimulusDuration = value;
-                  });
-                },
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Stimulus Duration',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${_stimulusDuration.toStringAsFixed(1)} seconds',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  Slider(
+                    value: _stimulusDuration,
+                    min: 1.0,
+                    max: 5.0,
+                    divisions: 8,
+                    label: '${_stimulusDuration.toStringAsFixed(1)}s',
+                    onChanged: (value) {
+                      setState(() {
+                        _stimulusDuration = value;
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
             
